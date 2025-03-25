@@ -1,0 +1,25 @@
+[project]
+name = "attentionviewer"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "sontyubo"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pillow (>=11.1.0,<12.0.0)",
+    "gradio (>=5.23.0,<6.0.0)",
+    "matplotlib (>=3.10.1,<4.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry]
+packages = [
+    { include = "utils", from = "src" },
+]
