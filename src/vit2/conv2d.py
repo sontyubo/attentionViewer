@@ -15,6 +15,8 @@ def _standardize_weight(weight, dim, eps):
 
 # class
 class StdConv2d(nn.Conv2d):
+    """重みを標準化し、スケールを揃えることで学習が安定する"""
+
     def forward(self, x):
         # dim: 重み全体を集めて「カーネルの幅」の位置ごとに正規化している
         std_w = _standardize_weight(self.weight, dim=[0, 1, 2], eps=1e-5)
