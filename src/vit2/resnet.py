@@ -77,3 +77,129 @@ class PreActBottleneck(nn.Module):
         y = self.relu(residual + y)
 
         return y
+
+
+class ResNetV2(nn.Module):
+    def __init__(self, block_units, width_factor):
+        super().__init__()
+        width = int(64 * width_factor)
+        self.width = width
+        self.downsample = 16
+
+        self.root = nn.Sequential(
+            # ordered dictにはリストやタプルでセットする
+            OrderedDict(
+                [
+                    (
+                        "conv",
+                        StdConv2d(
+                            3, width, kernel_size=7, stride=2, bias=False, padding=3
+                        ),
+                    ),
+                    ("gn", nn.GroupNorm(32, width, eps=1e-6)),
+                    ("relu", nn.ReLU(inplace=True)),
+                    ("pool", nn.MaxPool2d(kernel_size=3, stride=2, padding=0)),
+                ]
+            )
+        )
+
+        self.body = nn.Sequential(
+            OrderedDict(
+                [
+                    (
+                        "block1",
+                        nn.Sequential(
+                            OrderedDict(
+                                [
+                                    (
+                                        "unit1",
+                                        PreActBottleneck(
+                                            in_channels=width,
+                                            out_channels=width * 4,
+                                            mid_channels=width,
+                                        ),
+                                    )
+                                ]
+                                + [
+                                    (
+                                        f"unit{i:d}",
+                                        PreActBottleneck(
+                                            in_channels=width * 4,
+                                            out_channels=width * 4,
+                                            mid_channels=width,
+                                        ),
+                                    )
+                                    for i in range(2, block_units[0] + 1)
+                                ],
+                            )
+                        ),
+                    ),
+                    (
+                        "block2",
+                        nn.Sequential(
+                            OrderedDict(
+                                [
+                                    (
+                                        "unit1",
+                                        PreActBottleneck(
+                                            in_channels=width * 4,
+                                            out_channels=width * 8,
+                                            mid_channels=width * 2,
+                                        ),
+                                    )
+                                ]
+                                + [
+                                    (
+                                        f"unit{i:d}",
+                                        PreActBottleneck(
+                                            in_channels=width * 8,
+                                            out_channels=width * 8,
+                                            mid_channels=width * 2,
+                                        ),
+                                    )
+                                    for i in range(2, block_units[1] + 1)
+                                ],
+                            )
+                        ),
+                    ),
+                    (
+                        "block3",
+                        nn.Sequential(
+                            OrderedDict(
+                                [
+                                    (
+                                        "unit1",
+                                        PreActBottleneck(
+                                            in_channels=width * 8,
+                                            out_channels=width * 16,
+                                            mid_channels=width * 4,
+                                        ),
+                                    )
+                                ]
+                                + [
+                                    (
+                                        f"unit{i:d}",
+                                        PreActBottleneck(
+                                            in_channels=width * 16,
+                                            out_channels=width * 16,
+                                            mid_channels=width * 4,
+                                        ),
+                                    )
+                                    for i in range(2, block_units[2] + 1)
+                                ],
+                            )
+                        ),
+                    ),
+                ]
+            )
+        )
+
+    def forward(self, x):
+        x = self.root(x)
+        x = self.body(x)
+        return x
+
+
+def resnet50():
+    model = ResNetV2([3, 4, 9], 1.0)
+    return model

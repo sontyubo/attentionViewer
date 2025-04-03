@@ -9,7 +9,7 @@
 		"dockerfile": "./Dockerfile"
 	},
 	"runArgs": [
-		"--gpus", "all"
+		//"--gpus", "all"
     ],
 	"customizations": {
 		"vscode": {

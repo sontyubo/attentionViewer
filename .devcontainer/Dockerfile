@@ -21,8 +21,8 @@ RUN curl -sSL https://install.python-poetry.org | python3
 ENV PATH="/root/.local/bin:$PATH"
 
 # プロジェクト内に仮想環境を作る
-RUN poetry config virtualenvs.in-project true \
-    && poetry install
+RUN poetry config virtualenvs.in-project true
+    #&& poetry install
 
 # ポートを公開
 EXPOSE 7860
